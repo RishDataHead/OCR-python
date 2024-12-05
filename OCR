@@ -1,0 +1,39 @@
+import pdfplumber
+import os
+
+# Paths
+pdf_path = "C:\\Users\\Rishabh\\Desktop\\samplefactsheet.PDF"
+output_dir = "C:\\Users\\Rishabh\\Desktop\\output"
+os.makedirs(output_dir, exist_ok=True)
+
+output_text_file = os.path.join(output_dir, "structured_output.txt")
+
+# Open the PDF using PDFPlumber
+with pdfplumber.open(pdf_path) as pdf:
+    structured_text = []
+    
+    for page_num, page in enumerate(pdf.pages, start=1):
+        # Extract text with layout preserved
+        page_text = page.extract_text()
+        
+        # Extract tables if present
+        tables = page.extract_tables()
+        
+        # Append text and tables to the output
+        structured_text.append(f"Page {page_num}\n{'='*40}")
+        structured_text.append(page_text if page_text else "[No Text Detected]")
+        
+        if tables:
+            for table_idx, table in enumerate(tables, start=1):
+                
+                structured_text.append(f"\nTable {table_idx} (Page {page_num}):")
+                for row in table:
+                    structured_text.append("\t".join(row))  # Preserve table row structure
+    
+        structured_text.append("\n" + "="*40 + "\n")
+    
+# Save the structured text to a file
+with open(output_text_file, "w", encoding="utf-8") as text_file:
+    text_file.write("\n".join(structured_text))
+
+print(f"Structured text extraction complete! File saved at: {output_text_file}")
